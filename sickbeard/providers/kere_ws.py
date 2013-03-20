@@ -43,7 +43,9 @@ class KereWSProvider(newznab.NewznabProvider):
 
 	def __init__(self):
 		# use the newznab constructor, the parameters used here are only default values because at startup the config file isn't read
-		newznab.NewznabProvider.__init__(self, "kerews", "http://kere.ws/", "2000,8000", None)
+		newznab.NewznabProvider.__init__(self, "kerews", "http://kere.ws/",  None)
+		self.catIDs="2000,8000"
+		#self.enabled = 1
 
 		self.cache = KereWSCache(self)
 
@@ -65,7 +67,11 @@ class KereWSProvider(newznab.NewznabProvider):
 
 		searchURL = sickbeard.KEREWS_URL + 'api?' + urllib.urlencode(params)
 
-		logger.log(u"Search url: " + searchURL, logger.DEBUG)
+		logparams = params
+		logparams['apikey'] = "XXXXXXXXXXXXXX"
+		logURL = sickbeard.KEREWS_URL + 'api?' + urllib.urlencode(logparams)
+
+		logger.log(u"Search url: " + logURL, logger.DEBUG)
 
 		data = self.getURL(searchURL)
 		

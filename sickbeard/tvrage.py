@@ -74,6 +74,9 @@ class TVRage:
 
     def confirmShow(self, force=False):
 
+        #temp fix for german airdates... force return true
+        return True
+
         if self.show.tvrid != 0 and not force:
             logger.log(u"We already have a TVRage ID, skipping confirmation", logger.DEBUG)
             return True
@@ -114,7 +117,7 @@ class TVRage:
                     ep = t[self.show.tvdbid][curSeason][1]
 
                     # make sure we have a date to compare with
-                    if ep["firstaired"] == "" or ep["firstaired"] == None:
+                    if ep["firstaired"] == "" or ep["firstaired"] == None or ep["firstaired"] == "0000-00-00":
                         continue
 
                     # get a datetime object
@@ -247,12 +250,12 @@ class TVRage:
         url += urllib.urlencode(urlData)
 
         logger.log(u"Loading TVRage info from URL: " + url, logger.DEBUG)
+        result = helpers.getURL(url)
 
-        try:
-            result = helpers.getURL(url).decode('utf-8')
-        except (urllib2.HTTPError, IOError), e:
-            logger.log(u"Unable to load TVRage info: " + ex(e))
+        if result is None:
             raise exceptions.TVRageException("urlopen call to " + url + " failed")
+        else:
+            result = result.decode('utf-8')
 
         urlData = result.splitlines()
 

@@ -18,15 +18,12 @@
 
 __all__ = ['ezrss',
            'tvtorrents',
-           'nzbmatrix',
-           'nzbs_org_old',
            'nzbsrus',
            'womble',
-           'newzbin',
            'nzbindex',
-           'nzbserien',
            'kere_ws',
            'btn',
+           'nzbclub'
            ]
 
 import sickbeard
@@ -39,7 +36,6 @@ def sortedProviderList():
 
     initialList = sickbeard.providerList + sickbeard.newznabProviderList
     providerDict = dict(zip([x.getID() for x in initialList], initialList))
-
     newList = []
 
     # add all modules in the priority list, in order
@@ -62,9 +58,7 @@ def getNewznabProviderList(data):
 
     defaultList = [makeNewznabProvider(x) for x in getDefaultNewznabProviders().split('!!!')]
     providerList = filter(lambda x: x, [makeNewznabProvider(x) for x in data.split('!!!')])
-
     providerDict = dict(zip([x.name for x in providerList], providerList))
-
     for curDefault in defaultList:
         if not curDefault:
             continue
@@ -73,7 +67,7 @@ def getNewznabProviderList(data):
         if curDefault.key == '0':
             curDefault.key = ''
             curDefault.needs_auth = False
-
+               
         if curDefault.name not in providerDict:
             curDefault.default = True
             providerList.append(curDefault)
@@ -88,7 +82,7 @@ def getNewznabProviderList(data):
 
 
 def makeNewznabProvider(configString):
-
+    logger.log(configString)
     if not configString:
         return None
 
@@ -103,15 +97,15 @@ def makeNewznabProvider(configString):
 
     newznab = sys.modules['sickbeard.providers.newznab']
 
-    newProvider = newznab.NewznabProvider(name, url, catIDs, key)
-    #newProvider.key = key
-    #newProvider.catIDs = catIDs
-    #newProvider.enabled = enabled == '1'
+    newProvider = newznab.NewznabProvider(name, url)
+    newProvider.key = key
+    newProvider.catIDs = catIDs
+    newProvider.enabled = enabled == '1'
 
     return newProvider
 
 def getDefaultNewznabProviders():
-    return 'Sick Beard Index|http://momo.sickbeard.com/|0|5000|0!!!NZBs.org|http://beta.nzbs.org/||5000|0'
+    return 'Sick Beard Index|http://lolo.sickbeard.com/|0|5000|0!!!NZBs.org|http://beta.nzbs.org/|0|5000|0'
 
 
 def getProviderModule(name):

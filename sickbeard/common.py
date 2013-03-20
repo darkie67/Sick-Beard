@@ -27,7 +27,7 @@ mediaExtensions = ['avi', 'mkv', 'mpg', 'mpeg', 'wmv',
                    'ogm', 'mp4', 'iso', 'img', 'divx',
                    'm2ts', 'm4v', 'ts', 'flv', 'f4v',
                    'mov', 'rmvb', 'vob', 'dvr-ms', 'wtv',
-                   'ogv']
+                   'ogv', '3gp']
 
 ### Other constants
 MULTI_EP_RESULT = -1
@@ -51,6 +51,21 @@ SKIPPED = 5 # episodes we don't want
 ARCHIVED = 6 # episodes that you don't have locally (counts toward download completion stats)
 IGNORED = 7 # episodes that you don't want included in your download stats
 SNATCHED_PROPER = 9 # qualified with quality
+
+NAMING_REPEAT = 1
+NAMING_EXTEND = 2
+NAMING_DUPLICATE = 4
+NAMING_LIMITED_EXTEND = 8
+NAMING_SEPARATED_REPEAT = 16
+NAMING_LIMITED_EXTEND_E_PREFIXED = 32
+
+multiEpStrings = {}
+multiEpStrings[NAMING_REPEAT] = "Repeat"
+multiEpStrings[NAMING_SEPARATED_REPEAT] = "Repeat (Separated)"
+multiEpStrings[NAMING_DUPLICATE] = "Duplicate"
+multiEpStrings[NAMING_EXTEND] = "Extend"
+multiEpStrings[NAMING_LIMITED_EXTEND] = "Extend (Limited)"
+multiEpStrings[NAMING_LIMITED_EXTEND_E_PREFIXED] = "Extend (Limited, E-prefixed)"
 
 class Quality:
 
@@ -104,7 +119,7 @@ class Quality:
             if curQual<<16 & quality:
                 bestQualities.append(curQual)
 
-        return (anyQualities, bestQualities)
+        return (sorted(anyQualities), sorted(bestQualities))
 
     @staticmethod
     def nameQuality(name):
@@ -124,13 +139,13 @@ class Quality:
         checkName = lambda list, func: func([re.search(x, name, re.I) for x in list])
 
 
-        if checkName(["(pdtv|hdtv|dsr|hdtvrip)(.repack)?.(xvi-?d|x264)"], all) and not checkName(["(720|1080)[pi]"], all):
+        if checkName(["(pdtv|hdtv|dsr|hdtvrip|webrip)(.repack)?.(xvi-?d|x264)"], all) and not checkName(["(720|1080)[pi]"], all):
             return Quality.SDTV
         elif checkName(["(dvdrip|bdrip|blurayrip)(.repack)?(.ws)?.(xvi-?d|divx|x264)"], any) and not checkName(["(720|1080)[pi]"], all):
             return Quality.SDDVD
         elif checkName(["720p", "hdtv", "x264"], all) or checkName(["hr.ws.pdtv.x264"], any):
             return Quality.HDTV
-        elif checkName(["720p", "web.dl"], all) or checkName(["720p", "(webhd|itunes)", "h.?264"], all):
+        elif checkName(["720p", "web.dl"], all) or checkName(["720p", "(webhd|itunes)", "(h|x).?264"], all) or checkName(["720p", "(webhd|itunes)", "avc"], all):
             return Quality.HDWEBDL
         elif checkName(["720p", "bluray", "x264"], all) or checkName(["720p", "hddvd", "x264"], all):
             return Quality.HDBLURAY
@@ -142,7 +157,7 @@ class Quality:
     @staticmethod
     def assumeQuality(name):
 
-        if name.lower().endswith(".avi"):
+        if name.lower().endswith((".avi", ".mp4")):
             return Quality.SDTV
         elif name.lower().endswith(".mkv"):
             return Quality.HDTV
@@ -159,6 +174,9 @@ class Quality:
 
     @staticmethod
     def splitCompositeStatus(status):
+        if status == UNKNOWN:
+            return (UNKNOWN, Quality.UNKNOWN)
+        
         """Returns a tuple containing (status, quality)"""
         for x in sorted(Quality.qualityStrings.keys(), reverse=True):
             if status > x*100:

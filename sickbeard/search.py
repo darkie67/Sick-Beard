@@ -106,6 +106,7 @@ def snatchEpisode(result, endStatus=SNATCHED):
     if result.resultType in ("nzb", "nzbdata"):
         if sickbeard.NZB_METHOD == "blackhole":
             dlResult = _downloadResult(result)
+            logger.log(u"nzb parameters: {0}".format(result.__dict__), logger.ERROR)
         elif sickbeard.NZB_METHOD == "sabnzbd":
             dlResult = sab.sendNZB(result)
         elif sickbeard.NZB_METHOD == "nzbget":
@@ -133,7 +134,7 @@ def snatchEpisode(result, endStatus=SNATCHED):
             curEpObj.saveToDB()
 
         if curEpObj.status not in Quality.DOWNLOADED:
-            notifiers.notify_snatch(curEpObj.prettyName(True))
+            notifiers.notify_snatch(curEpObj.prettyName())
 
     return True
 
@@ -169,7 +170,7 @@ def searchForNeededEpisodes():
         for curEp in curFoundResults:
 
             if curEp.show.paused:
-                logger.log(u"Show "+curEp.show.name+" is paused, ignoring all RSS items for "+curEp.prettyName(True), logger.DEBUG)
+                logger.log(u"Show "+curEp.show.name+" is paused, ignoring all RSS items for "+curEp.prettyName(), logger.DEBUG)
                 continue
 
             # find the best result for the current episode
@@ -260,7 +261,7 @@ def isFinalResult(result):
 
 def findEpisode(episode, manualSearch=False):
 
-    logger.log(u"Searching for " + episode.prettyName(True))
+    logger.log(u"Searching for " + episode.prettyName())
 
     foundResults = []
 

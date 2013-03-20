@@ -76,12 +76,20 @@ def sendNZB(nzb):
         params['mode'] = 'addfile'
         multiPartParams = {"nzbfile": (nzb.name + ".nzb", nzb.extraInfo[0])}
 
+    if nzb.resultType == "nzb" and nzb.provider.getID() in ['nzbindex','nzbclub']:
+        logger.log(u"Pretty name for SAB queue: " + nzb.name)
+        params['nzbname'] = nzb.name
+
     url = sickbeard.SAB_HOST + "api?" + urllib.urlencode(params)
 
     logger.log(u"Sending NZB to SABnzbd")
     logger.log(u"URL: " + url, logger.DEBUG)
 
     try:
+        #Sometimes (only from nzbindex results?) we have stupid names in sab queue - postprocessing does not work then.
+        #Should use &nzbname=NiceName here to send the "real" name to sab.
+        
+
         # if we have the URL to an NZB then we've built up the SAB API URL already so just call it 
         if nzb.resultType == "nzb":
             f = urllib.urlopen(url)
