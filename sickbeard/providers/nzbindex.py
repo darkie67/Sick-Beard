@@ -79,7 +79,12 @@ class NZBIndexProvider(generic.NZBProvider):
         return (title, url)
 
     def _doSearch(self, curString, quotes=False, show=None):
-
+#
+#       Removing "OR Videomann" from Searchstring, as RSS-Feed does not support "OR" and thus
+#       finds nothing anymore
+#
+        curString=curString.replace(" OR Videomann","")
+#        
         term =  re.sub('[\.\-\:]', ' ', curString).encode('utf-8')
         self.searchString = term
         if quotes:
